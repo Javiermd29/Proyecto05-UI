@@ -1,6 +1,8 @@
+using Microsoft.Win32.SafeHandles;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -17,6 +19,13 @@ public class GameManager : MonoBehaviour
     private Vector3 randomPos;
     public List<Vector3> targetPositionsInScene;
 
+    private int score;
+    private int time;
+    private int timeMax = 60;
+
+    private UIManager uiManager;
+
+
     private void Awake()
     {
         targetPositionsInScene = new List<Vector3>();
@@ -25,12 +34,31 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        StartCoroutine(SpawnRandomTarget());
+        uiManager = FindObjectOfType<UIManager>();
+        uiManager.HideGameOverPanel();
+        uiManager.ShowMainMenuPanel();
+        
     }
 
     void Update()
     {
-        
+        IsGameOver();
+    }
+
+    public void StartGame(int difficulty)
+    {
+        uiManager.HideMainMenuPanel();
+
+        score = 0;
+        UpdateScore(0);
+
+        time = timeMax / difficulty;
+        uiManager.UpdateTimeText(time);
+
+        spawnRate = spawnRate / difficulty;
+
+        StartCoroutine(SpawnRandomTarget());
+        StartCoroutine(Timer());
     }
 
     private Vector3 RandomSpawnPosition()
@@ -50,6 +78,12 @@ public class GameManager : MonoBehaviour
         {
             yield return new WaitForSeconds(spawnRate);
 
+            if (isGameOver)
+            {
+                
+                break;
+            }
+
             int randomPrefabsIndex = Random.Range(0, targetPrefabs.Length);
 
             randomPos = RandomSpawnPosition();
@@ -63,8 +97,59 @@ public class GameManager : MonoBehaviour
             targetPositionsInScene.Add(randomPos);
 
         }
-
         
+    }
+
+    private IEnumerator Timer()
+    {
+        while (!isGameOver)
+        {
+            yield return new WaitForSeconds(1);
+
+            if (isGameOver)
+            {
+                break;
+            }
+
+            UpdateTime();
+        }
+    }
+
+    private void UpdateTime()
+    {
+        time--;
+        uiManager.UpdateTimeText(time);
+
+        if (time <= 0)
+        {
+            isGameOver = true;
+            uiManager.ShowGameOverPanel(score);
+        }
+
+    }
+
+    public void UpdateScore(int newPoints)
+    {
+        score += newPoints;
+        uiManager.UpdateScoreText(score);
+
+        if (score < 0)
+        {
+            isGameOver = true;
+            uiManager.ShowGameOverPanel(score);
+
+        }
+
+    }
+
+    public bool IsGameOver()
+    {
+        return isGameOver;
+    }
+
+    public void RestartGameScene()
+    {
+        SceneManager.LoadScene(0);
     }
 
 }

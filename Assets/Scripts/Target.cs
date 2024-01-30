@@ -7,6 +7,9 @@ public class Target : MonoBehaviour
 {
 
     [SerializeField] private float lifeTime = 2f;
+    [SerializeField] private int points;
+
+    [SerializeField]private GameObject explosionParticle;
 
     private GameManager gameManager;
 
@@ -24,12 +27,24 @@ public class Target : MonoBehaviour
 
     private void OnMouseDown()
     {
-        Destroy(gameObject);
+        if (!gameManager.IsGameOver())
+        {
+            gameManager.UpdateScore(points);
+            Instantiate(explosionParticle, transform.position, Quaternion.identity);
+            Destroy(gameObject);
+            
+        }
+        
     }
 
     private void OnDestroy()
     {
         gameManager.targetPositionsInScene.Remove(transform.position);
+    }
+
+    public void SetLifeTime(int newLifeTime)
+    {
+        lifeTime = newLifeTime;
     }
 
 }
