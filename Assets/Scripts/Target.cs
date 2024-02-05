@@ -8,6 +8,7 @@ public class Target : MonoBehaviour
 
     [SerializeField] private float lifeTime = 2f;
     [SerializeField] private int points;
+    [SerializeField] private int lifes;
 
     [SerializeField]private GameObject explosionParticle;
 
@@ -30,6 +31,7 @@ public class Target : MonoBehaviour
         if (!gameManager.IsGameOver())
         {
             gameManager.UpdateScore(points);
+            gameManager.UpdateLifes(lifes);
             Instantiate(explosionParticle, transform.position, Quaternion.identity);
             Destroy(gameObject);
             

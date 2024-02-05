@@ -22,6 +22,7 @@ public class GameManager : MonoBehaviour
     private int score;
     private int time;
     private int timeMax = 60;
+    private int lifes;
 
     private UIManager uiManager;
 
@@ -37,12 +38,14 @@ public class GameManager : MonoBehaviour
         uiManager = FindObjectOfType<UIManager>();
         uiManager.HideGameOverPanel();
         uiManager.ShowMainMenuPanel();
+        uiManager.HidePauseMenu();
         
     }
 
     void Update()
     {
         IsGameOver();
+        PausePanel();
     }
 
     public void StartGame(int difficulty)
@@ -50,12 +53,15 @@ public class GameManager : MonoBehaviour
         uiManager.HideMainMenuPanel();
 
         score = 0;
-        UpdateScore(0);
+        UpdateScore(score);
 
         time = timeMax / difficulty;
         uiManager.UpdateTimeText(time);
 
         spawnRate = spawnRate / difficulty;
+
+        lifes = 3;
+        UpdateLifes(0);
 
         StartCoroutine(SpawnRandomTarget());
         StartCoroutine(Timer());
@@ -80,7 +86,6 @@ public class GameManager : MonoBehaviour
 
             if (isGameOver)
             {
-                
                 break;
             }
 
@@ -120,7 +125,7 @@ public class GameManager : MonoBehaviour
         time--;
         uiManager.UpdateTimeText(time);
 
-        if (time <= 0)
+        if (time <= 0 || lifes == 0)
         {
             isGameOver = true;
             uiManager.ShowGameOverPanel(score);
@@ -142,6 +147,27 @@ public class GameManager : MonoBehaviour
 
     }
 
+    public void UpdateLifes(int newLifes)
+    {
+        lifes += newLifes;
+        uiManager.UpdateLifesText(lifes);
+        
+        if (lifes == 0)
+        {
+            isGameOver = true;
+            uiManager.ShowGameOverPanel(score);
+        }
+    }
+
+    public void PausePanel()
+    {
+        if (Input.GetKeyDown("escape"))
+        {
+            uiManager.ShowPauseMenu();
+            Time.timeScale = 0;
+        }
+    }
+
     public bool IsGameOver()
     {
         return isGameOver;
@@ -150,6 +176,13 @@ public class GameManager : MonoBehaviour
     public void RestartGameScene()
     {
         SceneManager.LoadScene(0);
+        Time.timeScale = 1;
+    }
+
+    public void ResumeGame()
+    {
+        uiManager.HidePauseMenu();
+        Time.timeScale = 1;
     }
 
 }
